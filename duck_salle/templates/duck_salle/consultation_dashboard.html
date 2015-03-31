@@ -1,0 +1,143 @@
+{% extends "xadmin/base_site.html" %}
+{% load staticfiles %}
+{% block nav_title %}Gestion des salles{% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="{% static "duck_salle/fullcalendar/fullcalendar.min.css" %}"/>
+    {#    <script src="{% static "duck_salle/jquery/jquery.min.js" %}"></script>#}
+    <script src="{% static "duck_salle/moment/min/moment.min.js" %}"></script>
+    <script src="{% static "duck_salle/fullcalendar/fullcalendar.js" %}"></script>
+    <script src="{% static "duck_salle/fullcalendar/lang/fr.js" %}"></script>
+    <script>
+        ;
+        (function ($) {
+            $(document).ready(function () {
+
+
+                function zfill(num, len) { // pad num with len 0
+                    return (0 > num ? "-" : "") +
+                            (Math.pow(10, len) <= Math.abs(num) ?
+                            "0" + Math.abs(num) :
+                            Math.pow(10, len) + Math.abs(num)).toString().substr(1)
+                }
+
+                // page is now ready, initialize the calendar...
+
+                $('#calendar').fullCalendar({
+                    header: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'month,agendaWeek,agendaDay'
+                    },
+                    selectable: true,
+                    defaultView: 'agendaWeek',
+                    events: {
+                        url: '/salle/reservation_events/'
+                    },
+                    timeFormat: 'H(:mm)',
+                    axisFormat: 'HH:mm',
+                    columnFormat: {
+                        month: 'ddd',
+                        week: 'ddd D/M',
+                        day: 'dddd D/M'
+                    },
+                    select: function (start, end, jsEvent, view) {
+
+                        console.log(moment(start).toDate() + " " + end);
+                        console.log(jsEvent);
+                        console.log(view);
+                        var start_hour = moment(start).toDate().getUTCHours();
+                        var start_min = moment(start).toDate().getUTCMinutes();
+                        var end_hour = moment(end).toDate().getUTCHours();
+                        var end_min = moment(end).toDate().getUTCMinutes();
+                        var date = moment(start).toDate();
+                        //$("#fullCalModal").modal();
+                        var date_str = zfill(date.getDate(), 2) + "/" + zfill(date.getMonth() + 1, 2) + "/" + date.getFullYear();
+                        var start_str = zfill(start_hour, 2) + ":" + zfill(start_min, 2)
+                        var end_str = zfill(end_hour, 2) + ":" + zfill(end_min, 2)
+                        $("#fullCalModal .modal-body").load("{% url 'reservation_form' %}?date=" +
+                                date_str + "&start=" + start_str +
+                                "&end=" + end_str,
+                                function (e) {
+                                    $('#submit').on('click', function (event) {
+                                        event.preventDefault();
+                                        var data = {};
+                                        $('#myForm :input').each(function () {
+                                            var name = $(this).attr('name');
+                                            if (name) {
+                                                data[name] = $(this).val();
+                                                console.log(data);
+                                            }
+                                        });
+                                        $.ajax({
+                                            type: "POST",
+                                            url: "{% url 'reservation_form' %}",
+                                            data: data,
+                                            success: function (msg) {
+                                                $('#fullCalModal .modal-body').html(msg);
+                                                $('#calendar').fullCalendar('refetchEvents');
+                                            },
+                                            error: function (XMLHttpRequest, testStatus, errorTrow) {
+                                                console.log(XMLHttpRequest.responseText);
+                                                $('#fullCalModal').replaceWith(XMLHttpRequest.responseText);
+                                            }
+                                        });
+                                    });
+                                    $('#fullCalModal').modal('show');
+                                });
+
+
+                    },
+                    eventClick: function (calEvent, jsEvent, view) {
+                        console.log(calEvent);
+                        if (window.confirm("Voulez-vous supprimer l'événement suivant:\n" + calEvent.title)) {
+                            var csrftoken = $.getCookie('csrftoken');
+                            var url = '/salle/reservations/' + calEvent.id + '/';
+                            $.ajax({
+                                type: "DELETE",
+                                url: url,
+                                headers: {"X-CSRFToken": csrftoken},
+                                data: null,
+                                success: function (msg) {
+                                    $('#calendar').fullCalendar('refetchEvents');
+                                },
+                                error: function (XMLHttpRequest, testStatus, errorTrow) {
+                                    console.log(XMLHttpRequest.responseText);
+                                }
+                            });
+                        }
+                    }
+                });
+
+            });
+        })(jQuery);
+    </script>
+
+    <style>
+        #calendar {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+    </style>
+    <div id="calendar"></div>
+<div id="fullCalModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span> <span
+                        class="sr-only">close</span></button>
+                <h4>Ajouter réservation</h4>
+            </div>
+            <div class="modal-body">
+
+             </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+

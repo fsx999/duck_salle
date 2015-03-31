@@ -1,0 +1,12 @@
+{% load static floppyforms %}
+
+<form class="form-horizontal" id="myForm" action="">
+    {% csrf_token %}
+    {% form form %}
+    <div class="form-group">
+        <div class="col-sm-offset-3 col-sm-10">
+            <button id="submit" type="submit" class="btn btn-success">Ajouter</button>
+        </div>
+    </div>
+</form>
+

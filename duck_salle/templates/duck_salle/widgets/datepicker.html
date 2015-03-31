@@ -1,0 +1,18 @@
+{# datepicker.html #}
+{% load static %}
+{% include "floppyforms/input.html" %}
+
+<script type="text/javascript">
+    ;
+ (function ($) {
+     $(document).ready(function() {
+         // Checking support for <input type="date"> using Modernizr:
+         // http://modernizr.com/
+         var options = {
+        dateFormat: 'yy-mm-dd'
+      };
+         $('#{{ attrs.id }}').datepicker(options);
+
+     });
+ })(jQuery);
+</script>

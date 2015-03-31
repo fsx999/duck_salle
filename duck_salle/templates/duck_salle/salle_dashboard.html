@@ -1,0 +1,7 @@
+{% extends "xadmin/base_site.html" %}
+{% block nav_title %}Gestion des salles{% endblock %}
+{% block content %}
+<a class="btn btn-primary" href="{% url 'xadmin:duck_salle_reservation_changelist'%}">Réservations</a>
+<a class="btn btn-primary" href="{% url 'xadmin:consultation_dashboard'%}">Consultation</a>
+{% endblock %}
+Coucou
