@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 import datetime
 from django.core.exceptions import ValidationError
 from django.forms import Media
@@ -12,6 +13,7 @@ from xadmin.views import filter_hook
 
 
 class SalleDashboard(views.Dashboard):
+    site_title = 'Backoffice'
     base_template = 'duck_salle/salle_dashboard.html'
     widget_customiz = False
 
@@ -19,11 +21,16 @@ class SalleDashboard(views.Dashboard):
     def get(self, request, *args, **kwargs):
         self.widgets = self.get_widgets()
         return self.template_response(self.base_template, self.get_context())
+
+    @filter_hook
+    def get_breadcrumb(self):
+        return [{'url': self.get_admin_url('index'), 'title': 'Accueil'},
+                {'title': 'Gestion des salles'}]
 xadmin.site.register_view(r'^duck_salle_main/$', SalleDashboard, 'salle_dashboard')
 
 
 class ConsultationDashboard(views.Dashboard):
-#class ConsultationDashboard(FormView):
+    site_title = 'Backoffice'
     base_template = 'duck_salle/consultation_dashboard.html'
     widget_customiz = False
 
@@ -33,6 +40,12 @@ class ConsultationDashboard(views.Dashboard):
         context = self.get_context()
         context['events'] = Reservation.objects.all()
         return self.template_response(self.base_template, context)
+
+    @filter_hook
+    def get_breadcrumb(self):
+        return [{'url': self.get_admin_url('index'), 'title': 'Accueil'},
+                {'url': self.get_admin_url('salle_dashboard'), 'title': 'Gestion des salles'},
+                {'title': 'Consultations'}]
 
     @filter_hook
     def get_media(self, *args, **kwargs):
@@ -83,6 +96,11 @@ xadmin.site.register_view(r'^duck_salle/consultation/$', ConsultationDashboard, 
 
 
 class ReservationAdmin(object):
-    pass#form = ReservationForm
+    site_title = 'Backoffice'
 
+    @filter_hook
+    def get_breadcrumb(self):
+        return [{'url': self.get_admin_url('index'), 'title': 'Accueil'},
+                {'url': self.get_admin_url('salle_dashboard'), 'title': 'Gestion des salles'},
+                {'title': 'Réservations'}]
 xadmin.site.register(Reservation, ReservationAdmin)
