@@ -20,7 +20,6 @@ class ReservationForm(forms.Form):
     end = forms.TimeField()
 
     def save(self):
-        print self.cleaned_data
         r = Reservation(salle=self.cleaned_data['salle'],
                         label=self.cleaned_data['label'],
                         date=self.cleaned_data['date'],
